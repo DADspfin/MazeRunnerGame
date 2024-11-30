@@ -47,4 +47,5 @@ public abstract class GameObject {
     public void dispose() {
         texture.dispose();
     }
+
 }

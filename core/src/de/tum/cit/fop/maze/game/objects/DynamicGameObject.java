@@ -32,4 +32,5 @@ public class DynamicGameObject extends GameObject {
     public void update(float deltaTime) {
         position.mulAdd(velocity, deltaTime);
     }
+
 }
