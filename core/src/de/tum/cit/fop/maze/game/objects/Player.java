@@ -6,6 +6,8 @@ import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.TimeUtils;
+import de.tum.cit.fop.maze.MazeRunnerGame;
+import de.tum.cit.fop.maze.com.game.utils.AnimationUtils;
 
 public class Player extends DynamicGameObject {
     private float speed = 100f; // Normal walking speed
@@ -122,64 +124,79 @@ public class Player extends DynamicGameObject {
         super(x, y, width, height, "character.png");
         this.texture = new Texture(Gdx.files.internal("character.png"));
         lastDamageTime = 0;
-        int frameWidth = 32;
-        int frameHeight = 32;
-        int frameCount = 6; // Number of frames for each animation
 
+        float frameDuration = 0.1f; // Frame duration for animations
 
-        // Create animations from sprite sheet frames
-        idleAnimation = createAnimation(0, 0, frameWidth, frameHeight, frameCount); // Idle
-        walkLeftAnimation = createAnimation(0, frameHeight, frameWidth, frameHeight, frameCount); // Walk left
-        walkRightAnimation = createAnimation(0, 2 * frameHeight, frameWidth, frameHeight, frameCount); // Walk right
-        walkUpAnimation = createAnimation(0, 3 * frameHeight, frameWidth, frameHeight, frameCount); // Walk up
-        walkDownAnimation = createAnimation(0, 4 * frameHeight, frameWidth, frameHeight, frameCount); // Walk down
+        // Create animations with manually defined frame coordinates
+        idleAnimation = AnimationUtils.createAnimationFromCoordinates(
+                "character.png",
+                new int[][]{
+                        {0, 0, 18, 26} // {starting x, starting y, frameWidth, frameHeight}
+                },
+                frameDuration
+        );
+
+        walkLeftAnimation = AnimationUtils.createAnimationFromCoordinates(
+                "character.png",
+                new int[][]{
+                        {0, 32, 32, 32}, {32, 32, 32, 32}, {64, 32, 32, 32},
+                        {96, 32, 32, 32}, {128, 32, 32, 32}, {160, 32, 32, 32}
+                },
+                frameDuration
+        );
+
+        walkRightAnimation = AnimationUtils.createAnimationFromCoordinates(
+                "character.png",
+                new int[][]{
+                        {0, 64, 32, 32}, {32, 64, 32, 32}, {64, 64, 32, 32},
+                        {96, 64, 32, 32}, {128, 64, 32, 32}, {160, 64, 32, 32}
+                },
+                frameDuration
+        );
+
+        walkUpAnimation = AnimationUtils.createAnimationFromCoordinates(
+                "character.png",
+                new int[][]{
+                        {0, 96, 32, 32}, {32, 96, 32, 32}, {64, 96, 32, 32},
+                        {96, 96, 32, 32}, {128, 96, 32, 32}, {160, 96, 32, 32}
+                },
+                frameDuration
+        );
+
+        walkDownAnimation = AnimationUtils.createAnimationFromCoordinates(
+                "character.png",
+                new int[][]{
+                        {0, 128, 32, 32}, {32, 128, 32, 32}, {64, 128, 32, 32},
+                        {96, 128, 32, 32}, {128, 128, 32, 32}, {160, 128, 32, 32}
+                },
+                frameDuration
+        );
     }
 
     /**
-     * creating animation for the player
-     * @param x
-     * @param y
-     * @param frameWidth
-     * @param frameHeight
-     * @param frameCount
-     * @return
+     * Creates an animation from specific coordinates in a sprite sheet.
+     * @param filePath      Path to the sprite sheet.
+     * @param frameData     2D array of frame coordinates: {x, y, width, height}.
+     * @param frameDuration Duration of each frame in the animation.
+     * @return The created Animation object.
      */
-    private Animation<TextureRegion> createAnimation(int x, int y, int frameWidth, int frameHeight, int frameCount) {
-        TextureRegion[] frames = new TextureRegion[frameCount];
-        for (int i = 0; i < frameCount; i++) {
-            frames[i] = new TextureRegion(texture, x + i * frameWidth, y, frameWidth, frameHeight);
-        }
-        return new Animation<>(0.1f, frames); // Adjust speed as necessary
+    private Animation<TextureRegion> createAnimationFromRow(String filePath, int[][] frameData, float frameDuration) {
+        return MazeRunnerGame.createAnimationFromRow(filePath, frameData, frameDuration);
     }
 
 
-    /**
-     * update the direction the player is taking
-     * @param horizontal
-     * @param vertical
-     */
-    public void updateDirection(int horizontal, int vertical) {
-        if (horizontal == 0 && vertical == 0) {
-            currentDirection = IDLE;  // No keys pressed
-        } else if (horizontal < 0 && vertical == 0) {
-            currentDirection = WALKING_LEFT;
-        } else if (horizontal > 0 && vertical == 0) {
-            currentDirection = WALKING_RIGHT;
-        } else if (vertical > 0) {
-            currentDirection = WALKING_UP;
-        } else if (vertical < 0) {
-            currentDirection = WALKING_DOWN;
-        }
-    }
+
 
     private void setCurrentAnimation(Animation<TextureRegion> animation) {
+        //Gdx.app.log("Animation", "Setting animation: " + animation);
         // Set the animation to be drawn in the render method
         currentAnimation = animation;
     }
 
     public void draw(SpriteBatch batch) {
-        // Draw the current frame of the animation
-        batch.draw(currentAnimation.getKeyFrame(stateTime, true), position.x, position.y);
+        if (currentAnimation != null) {
+            batch.draw(currentAnimation.getKeyFrame(stateTime, true), position.x, position.y);
+        }
     }
 
     /**
@@ -192,23 +209,49 @@ public class Player extends DynamicGameObject {
         // Reset velocity to zero
         velocity.set(0, 0);
 
-        // Check for movement inputs
+        // Variables to track directional input
+        int horizontal = 0;
+        int vertical = 0;
+
+        // Check for movement inputs and set velocity
         if (Gdx.input.isKeyPressed(com.badlogic.gdx.Input.Keys.LEFT)) {
             velocity.x = -speed;
+            horizontal = -1;
         }
         if (Gdx.input.isKeyPressed(com.badlogic.gdx.Input.Keys.RIGHT)) {
             velocity.x = speed;
+            horizontal = 1;
         }
         if (Gdx.input.isKeyPressed(com.badlogic.gdx.Input.Keys.UP)) {
             velocity.y = speed;
+            vertical = 1;
         }
         if (Gdx.input.isKeyPressed(com.badlogic.gdx.Input.Keys.DOWN)) {
             velocity.y = -speed;
+            vertical = -1;
         }
 
         // Apply running multiplier if Shift is held
         if (Gdx.input.isKeyPressed(com.badlogic.gdx.Input.Keys.SHIFT_LEFT)) {
             velocity.scl(runMultiplier);
+        }
+
+        // Update direction based on movement input
+        if (horizontal == 0 && vertical == 0) {
+            currentDirection = IDLE;  // No keys pressed
+            setCurrentAnimation(idleAnimation);
+        } else if (horizontal < 0 && vertical == 0) {
+            currentDirection = WALKING_LEFT;
+            setCurrentAnimation(walkLeftAnimation);
+        } else if (horizontal > 0 && vertical == 0) {
+            currentDirection = WALKING_RIGHT;
+            setCurrentAnimation(walkRightAnimation);
+        } else if (vertical > 0) {
+            currentDirection = WALKING_UP;
+            setCurrentAnimation(walkUpAnimation);
+        } else if (vertical < 0) {
+            currentDirection = WALKING_DOWN;
+            setCurrentAnimation(walkDownAnimation);
         }
 
         // Move the player

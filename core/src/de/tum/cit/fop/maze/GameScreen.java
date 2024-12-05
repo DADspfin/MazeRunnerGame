@@ -46,27 +46,25 @@ public class GameScreen implements Screen {
 
     @Override
     public void render(float delta) {
-//        float clampedDelta = Math.min(delta, 0.1f); // Cap the delta time to avoid instability
-//        player.update(clampedDelta);
+        float clampedDelta = Math.min(delta, 0.1f);
 
-        //Gdx.app.log("Render", "Frame rendered with delta: " + delta);
+        // Clear the screen
+        ScreenUtils.clear(0, 0, 0, 1);
 
         // Check for escape key press to go back to the menu
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
             game.goToMenu();
         }
 
-        // Clear the screen
-        ScreenUtils.clear(0, 0, 0, 1);
-
-        // Update the camera
+        // Update camera and player's state
         camera.update();
+        player.update(clampedDelta);
 
-        // Update the player's state (movement and direction handled here)
-        player.update(delta);
+        // Update state time
+        stateTime += clampedDelta;
 
-        // Update state time for animation
-        stateTime += delta;
+        // Debugging: Print current direction
+        System.out.println("Rendering direction: " + player.getCurrentDirection());
 
         // Set the SpriteBatch's projection matrix to the camera's view
         game.getSpriteBatch().setProjectionMatrix(camera.combined);
@@ -76,10 +74,6 @@ public class GameScreen implements Screen {
 
         // Render the correct animation based on the player's direction
         switch (player.getCurrentDirection()) {
-            case Player.IDLE:
-                game.getSpriteBatch().draw(player.getIdleAnimation().getKeyFrame(stateTime, true),
-                        player.getX(), player.getY(), player.getWidth(), player.getHeight());
-                break;
             case Player.WALKING_LEFT:
                 game.getSpriteBatch().draw(player.getWalkLeftAnimation().getKeyFrame(stateTime, true),
                         player.getX(), player.getY(), player.getWidth(), player.getHeight());
@@ -96,11 +90,9 @@ public class GameScreen implements Screen {
                 game.getSpriteBatch().draw(player.getWalkUpAnimation().getKeyFrame(stateTime, true),
                         player.getX(), player.getY(), player.getWidth(), player.getHeight());
                 break;
-            default:
-                // Handle unexpected states with idle animation
+            case Player.IDLE:
                 game.getSpriteBatch().draw(player.getIdleAnimation().getKeyFrame(stateTime, true),
                         player.getX(), player.getY(), player.getWidth(), player.getHeight());
-                System.out.println("Default case triggered: Using Idle Animation");
                 break;
         }
 
@@ -110,6 +102,7 @@ public class GameScreen implements Screen {
         // End drawing
         game.getSpriteBatch().end();
     }
+
 
     @Override
     public void resize(int width, int height) {

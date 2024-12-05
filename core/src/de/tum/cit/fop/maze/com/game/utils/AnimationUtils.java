@@ -4,8 +4,36 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import de.tum.cit.fop.maze.MazeRunnerGame;
 
 public class AnimationUtils {
+    /**
+     * Creates and handles an Animation from manually specified frame coordinates.
+     *
+     * @param filePath     The path to the sprite sheet file.
+     * @param frameData    A 2D array specifying the frame coordinates: {x, y, width, height}.
+     * @param frameDuration The duration of each frame in seconds.
+     * @return The Animation object for the specified frames.
+     */
+    public static Animation<TextureRegion> createAnimationFromCoordinates(
+            String filePath, int[][] frameData, float frameDuration) {
+        // Load the sprite sheet
+        Texture spriteSheet = new Texture(Gdx.files.internal(filePath));
+
+        // Extract the specified frames
+        TextureRegion[] frames = new TextureRegion[frameData.length];
+        for (int i = 0; i < frameData.length; i++) {
+            int x = frameData[i][0];
+            int y = frameData[i][1];
+            int width = frameData[i][2];
+            int height = frameData[i][3];
+            frames[i] = new TextureRegion(spriteSheet, x, y, width, height);
+        }
+
+        // Create and return the animation
+        return new Animation<>(frameDuration, frames);
+    }
+
     /**
      * Creates and handles an Animation from a specific row in a sprite sheet.
      *

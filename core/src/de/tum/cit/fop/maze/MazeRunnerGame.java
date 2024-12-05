@@ -78,46 +78,23 @@ public class MazeRunnerGame extends Game {
         );
     }
 
-    public Animation<TextureRegion> getCharacterDownAnimation() {
-        return characterDownAnimation;
-    }
-
-    public Animation<TextureRegion> getCharacterRightAnimation() {
-        return characterRightAnimation;
-    }
-
-    public Animation<TextureRegion> getCharacterUpAnimation() {
-        return characterUpAnimation;
-    }
-
-    public Animation<TextureRegion> getCharacterLeftAnimation() {
-        return characterLeftAnimation;
-    }
-
     public static Animation<TextureRegion> createAnimationFromRow(
-            String filePath, int frameCols, int frameRows, int rowIndex, int frameCount, float frameDuration) {
+            String filePath, int[][] frameData, float frameDuration) {
         Texture spritesheet = new Texture(Gdx.files.internal(filePath));
-        TextureRegion[][] tmp = TextureRegion.split(
-                spritesheet,
-                spritesheet.getWidth() / frameCols,
-                spritesheet.getHeight() / frameRows
-        );
+        TextureRegion[] frames = new TextureRegion[frameData.length];
 
-        if (rowIndex < 0 || rowIndex >= frameRows) {
-            throw new IllegalArgumentException("Row index out of bounds");
+        // Extract frames manually based on the provided coordinates
+        for (int i = 0; i < frameData.length; i++) {
+            int x = frameData[i][0];
+            int y = frameData[i][1];
+            int width = frameData[i][2];
+            int height = frameData[i][3];
+            frames[i] = new TextureRegion(spritesheet, x, y, width, height);
         }
 
-        if (frameCount > frameCols) {
-            throw new IllegalArgumentException("Frame count exceeds available columns");
-        }
-
-        TextureRegion[] rowFrames = new TextureRegion[frameCount];
-        for (int i = 0; i < frameCount; i++) {
-            rowFrames[i] = tmp[rowIndex][i];
-        }
-
-        return new Animation<>(frameDuration, rowFrames);
+        return new Animation<>(frameDuration, frames);
     }
+
 
     /**
      * Switches to the menu screen.
