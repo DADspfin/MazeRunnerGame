@@ -89,4 +89,9 @@ public class StaticGameObject extends GameObject {
         }
     }
 
+    @Override
+    public void setPosition(int i, int i1) {
+        this.position.set(i, i1);
+    }
+
 }

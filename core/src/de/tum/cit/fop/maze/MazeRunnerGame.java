@@ -9,6 +9,8 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.Array;
+import de.tum.cit.fop.maze.com.game.utils.AnimationUtils;
+import de.tum.cit.fop.maze.game.objects.Player;
 import games.spooky.gdx.nativefilechooser.NativeFileChooser;
 
 /**
@@ -26,8 +28,13 @@ public class MazeRunnerGame extends Game {
     // UI Skin
     private Skin skin;
 
-    // Character animation downwards
+    // Player object
+    private Player player;
+
     private Animation<TextureRegion> characterDownAnimation;
+    private Animation<TextureRegion> characterRightAnimation;
+    private Animation<TextureRegion> characterUpAnimation;
+    private Animation<TextureRegion> characterLeftAnimation;
 
     /**
      * Constructor for MazeRunnerGame.
@@ -47,13 +54,69 @@ public class MazeRunnerGame extends Game {
         skin = new Skin(Gdx.files.internal("craft/craftacular-ui.json")); // Load UI skin
         this.loadCharacterAnimation(); // Load character animation
 
+        // Initialize the player object
+        player = new Player(100, 100, 32, 32); // Position at (100, 100), size 32x32
+
         // Play some background music
-        // Background sound
         Music backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal("background.mp3"));
         backgroundMusic.setLooping(true);
         backgroundMusic.play();
 
         goToMenu(); // Navigate to the menu screen
+
+        characterDownAnimation = AnimationUtils.createAnimationFromRow(
+                "character.png", 4, 8, 0, 4, 0.1f // Row 0, 4 frames in this row
+        );
+        characterRightAnimation = AnimationUtils.createAnimationFromRow(
+                "character.png", 4, 8, 1, 4, 0.1f // Row 1, 4 frames in this row
+        );
+        characterUpAnimation = AnimationUtils.createAnimationFromRow(
+                "character.png", 4, 8, 2, 4, 0.1f // Row 2, 4 frames in this row
+        );
+        characterLeftAnimation = AnimationUtils.createAnimationFromRow(
+                "character.png", 4, 8, 3, 4, 0.1f // Row 3, 4 frames in this row
+        );
+    }
+
+    public Animation<TextureRegion> getCharacterDownAnimation() {
+        return characterDownAnimation;
+    }
+
+    public Animation<TextureRegion> getCharacterRightAnimation() {
+        return characterRightAnimation;
+    }
+
+    public Animation<TextureRegion> getCharacterUpAnimation() {
+        return characterUpAnimation;
+    }
+
+    public Animation<TextureRegion> getCharacterLeftAnimation() {
+        return characterLeftAnimation;
+    }
+
+    public static Animation<TextureRegion> createAnimationFromRow(
+            String filePath, int frameCols, int frameRows, int rowIndex, int frameCount, float frameDuration) {
+        Texture spritesheet = new Texture(Gdx.files.internal(filePath));
+        TextureRegion[][] tmp = TextureRegion.split(
+                spritesheet,
+                spritesheet.getWidth() / frameCols,
+                spritesheet.getHeight() / frameRows
+        );
+
+        if (rowIndex < 0 || rowIndex >= frameRows) {
+            throw new IllegalArgumentException("Row index out of bounds");
+        }
+
+        if (frameCount > frameCols) {
+            throw new IllegalArgumentException("Frame count exceeds available columns");
+        }
+
+        TextureRegion[] rowFrames = new TextureRegion[frameCount];
+        for (int i = 0; i < frameCount; i++) {
+            rowFrames[i] = tmp[rowIndex][i];
+        }
+
+        return new Animation<>(frameDuration, rowFrames);
     }
 
     /**
@@ -71,7 +134,7 @@ public class MazeRunnerGame extends Game {
      * Switches to the game screen.
      */
     public void goToGame() {
-        this.setScreen(new GameScreen(this)); // Set the current screen to GameScreen
+        this.setScreen(new GameScreen(this, player)); // Pass the player object to the GameScreen
         if (menuScreen != null) {
             menuScreen.dispose(); // Dispose the menu screen if it exists
             menuScreen = null;
@@ -82,20 +145,23 @@ public class MazeRunnerGame extends Game {
      * Loads the character animation from the character.png file.
      */
     private void loadCharacterAnimation() {
-        Texture walkSheet = new Texture(Gdx.files.internal("character.png"));
+        Texture characterTexture = new Texture(Gdx.files.internal("character.png"));
 
-        int frameWidth = 16;
+        int frameWidth = 68; // Adjust these values based on the sprite dimensions
         int frameHeight = 32;
-        int animationFrames = 4;
+        int frameCols = 4;
+        int frameRows = 1; // Only 1 row for downward animation
 
-        // libGDX internal Array instead of ArrayList because of performance
-        Array<TextureRegion> walkFrames = new Array<>(TextureRegion.class);
+        // Split the sprite sheet
+        TextureRegion[][] frames = TextureRegion.split(characterTexture, frameWidth, frameHeight);
 
-        // Add all frames to the animation
-        for (int col = 0; col < animationFrames; col++) {
-            walkFrames.add(new TextureRegion(walkSheet, col * frameWidth, 0, frameWidth, frameHeight));
+        // Extract frames for the downward animation
+        Array<TextureRegion> walkFrames = new Array<>(frameCols);
+        for (int i = 0; i < frameCols; i++) {
+            walkFrames.add(frames[0][i]); // 0 is the row index
         }
 
+        // Create animation
         characterDownAnimation = new Animation<>(0.1f, walkFrames);
     }
 
@@ -115,11 +181,12 @@ public class MazeRunnerGame extends Game {
         return skin;
     }
 
-    public Animation<TextureRegion> getCharacterDownAnimation() {
-        return characterDownAnimation;
-    }
 
     public SpriteBatch getSpriteBatch() {
         return spriteBatch;
+    }
+
+    public Player getPlayer() {
+        return player;
     }
 }

@@ -33,4 +33,9 @@ public class DynamicGameObject extends GameObject {
         position.mulAdd(velocity, deltaTime);
     }
 
+    @Override
+    public void setPosition(int i, int i1) {
+        this.position.set(i, i1);
+    }
+
 }
