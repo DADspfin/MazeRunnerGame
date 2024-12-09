@@ -42,40 +42,60 @@ public class Player extends DynamicGameObject {
 
         float frameDuration = 0.1f; // Duration of each animation frame
 
-        // Initialize idle animation
+        // Row-specific frame data
+        int[][] row0Frames = new int[][]{
+                {0, 0, 18, 26}, // Idle
+                {114, 0, 32, 32}, {146, 0, 32, 32}, {178, 0, 32, 32} // Jump (if needed)
+        };
+
+        // Initialize idle animation from row 0
         idleAnimation = AnimationUtils.createAnimationFromCoordinates(
                 "character.png",
-                new int[][]{{0, 0, 18, 26}},
+                new int[][]{{0, 0, 18, 26}}, // Use only the first frame
                 frameDuration
         );
 
-        // Initialize walk left animation
-        walkLeftAnimation = AnimationUtils.createAnimationFromCoordinates(
+        // Initialize walk animations using rows 1 to 3
+        walkLeftAnimation = AnimationUtils.createAnimationFromRow(
                 "character.png",
-                new int[][]{{0, 32, 32, 32}, {32, 32, 32, 32}, {64, 32, 32, 32}},
+                17, // Total columns in rows 1-3
+                8, // Total rows in sprite sheet
+                3, // Row index for walk left
+                3, // Number of frames for walk left
                 frameDuration
         );
 
-        // Initialize walk right animation
-        walkRightAnimation = AnimationUtils.createAnimationFromCoordinates(
+        walkRightAnimation = AnimationUtils.createAnimationFromRow(
                 "character.png",
-                new int[][]{{0, 64, 32, 32}, {32, 64, 32, 32}, {64, 64, 32, 32}},
+                16, // Total columns in rows 1-3
+                8, // Total rows in sprite sheet
+                1, // Row index for walk right
+                3, // Number of frames for walk right
                 frameDuration
         );
 
-        // Initialize walk up animation
-        walkUpAnimation = AnimationUtils.createAnimationFromCoordinates(
+        walkUpAnimation = AnimationUtils.createAnimationFromRow(
                 "character.png",
-                new int[][]{{0, 96, 32, 32}, {32, 96, 32, 32}, {64, 96, 32, 32}},
+                17, // Total columns in rows 1-3
+                8, // Total rows in sprite sheet
+                2, // Row index for walk up
+                3, // Number of frames for walk up
                 frameDuration
         );
 
-        // Initialize walk down animation
-        walkDownAnimation = AnimationUtils.createAnimationFromCoordinates(
+        walkDownAnimation = AnimationUtils.createAnimationFromRow(
                 "character.png",
-                new int[][]{{0, 128, 32, 32}, {32, 128, 32, 32}, {64, 128, 32, 32}},
+                17, // Total columns in rows 1-3
+                8, // Total rows in sprite sheet
+                0, // Row index for walk down
+                3, // Number of frames for walk up
                 frameDuration
         );
+
+        // Placeholder for rows 4-7 (action animations)
+        // Can extend this later by following a similar pattern:
+        // - For regular rows, use `createAnimationFromRow`.
+        // - For irregular rows, use `createAnimationFromCoordinates` with manual frame data.
     }
 
     /**

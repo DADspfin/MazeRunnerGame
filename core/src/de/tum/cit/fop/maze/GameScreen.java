@@ -12,6 +12,7 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import de.tum.cit.fop.maze.game.objects.Player;
 import de.tum.cit.fop.maze.game.objects.Slime;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -57,9 +58,15 @@ public class GameScreen implements Screen {
         font = game.getSkin().getFont("font");
         batch = game.getSpriteBatch();
 
-        // Load the maze
-        String absolutePath = "C:\\Users\\tseme\\IdeaProjects\\fophn2425projectfop-novitaslab\\maps\\level-1.properties";
-        maze = MazeLoader.loadMaze(absolutePath);
+        String relativePath = "maps/level-1.properties"; // Relative path from the project root
+        String basePath = System.getProperty("user.dir"); // Current working directory
+        String fullPath = basePath + File.separator + relativePath;
+
+        maze = MazeLoader.loadMaze(fullPath);
+
+        if (maze == null || maze.isEmpty()) {
+            throw new IllegalStateException("Maze could not be loaded or is empty!");
+        }
 
         // Load the tilesheet and extract the top-left corner tile for walls
         tilesheet = new Texture("basictiles.png");
