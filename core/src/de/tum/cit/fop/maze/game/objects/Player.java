@@ -5,12 +5,13 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import de.tum.cit.fop.maze.GameScreen;
 import de.tum.cit.fop.maze.com.game.utils.AnimationUtils;
 
 public class Player extends DynamicGameObject {
     private float speed = 100f; // Player's walking speed
     private float runMultiplier = 2.0f; // Running speed multiplier
-    private int hearts = 5; // Player's health
+    private int hearts = 10; // Player's health
     private Animation<TextureRegion> idleAnimation; // Idle animation
     private Animation<TextureRegion> walkLeftAnimation; // Walk left animation
     private Animation<TextureRegion> walkRightAnimation; // Walk right animation
@@ -18,15 +19,16 @@ public class Player extends DynamicGameObject {
     private Animation<TextureRegion> walkDownAnimation; // Walk down animation
     private Animation<TextureRegion> currentAnimation; // Current animation
     private float stateTime; // Tracks animation frame timing
-
+    private final GameScreen screen;
     // Direction constants
     public static final int IDLE = 0;
     public static final int WALKING_LEFT = 1;
     public static final int WALKING_RIGHT = 2;
     public static final int WALKING_DOWN = 3;
     public static final int WALKING_UP = 4;
-
     private int currentDirection = IDLE; // Player's current direction
+
+    private boolean isGameOver = false;
 
     /**
      * Player constructor initializes the player's position, size, and animations.
@@ -36,60 +38,42 @@ public class Player extends DynamicGameObject {
      * @param width  Width of the player sprite
      * @param height Height of the player sprite
      */
-    public Player(float x, float y, float width, float height) {
-        super(x, y, width, height, "character.png");
-        this.texture = new Texture(Gdx.files.internal("character.png"));
+    public Player(float x, float y, float width, float height, String texturePath, GameScreen screen) {
+        super(x, y, width, height, texturePath);
+        this.screen = screen;
+        initializeAnimations(texturePath); // Shared logic for animations
+    }
 
+    public Player(float x, float y, float width, float height, GameScreen screen) {
+        this(x, y, width, height, "character.png", screen); // Delegate to the main constructor
+    }
+
+    /**
+     * Initializes the player's animations based on the provided texture.
+     */
+    public void initializeAnimations(String texturePath) {
         float frameDuration = 0.1f; // Duration of each animation frame
 
-        // Row-specific frame data
-        int[][] row0Frames = new int[][]{
-                {0, 0, 18, 26}, // Idle
-                {114, 0, 32, 32}, {146, 0, 32, 32}, {178, 0, 32, 32} // Jump (if needed)
-        };
-
-        // Initialize idle animation from row 0
         idleAnimation = AnimationUtils.createAnimationFromCoordinates(
-                "character.png",
+                texturePath,
                 new int[][]{{0, 0, 18, 26}}, // Use only the first frame
                 frameDuration
         );
 
-        // Initialize walk animations using rows 1 to 3
         walkLeftAnimation = AnimationUtils.createAnimationFromRow(
-                "character.png",
-                17, // Total columns in rows 1-3
-                8, // Total rows in sprite sheet
-                3, // Row index for walk left
-                3, // Number of frames for walk left
-                frameDuration
+                texturePath, 17, 8, 3, 3, frameDuration
         );
 
         walkRightAnimation = AnimationUtils.createAnimationFromRow(
-                "character.png",
-                16, // Total columns in rows 1-3
-                8, // Total rows in sprite sheet
-                1, // Row index for walk right
-                3, // Number of frames for walk right
-                frameDuration
+                texturePath, 16, 8, 1, 3, frameDuration
         );
 
         walkUpAnimation = AnimationUtils.createAnimationFromRow(
-                "character.png",
-                17, // Total columns in rows 1-3
-                8, // Total rows in sprite sheet
-                2, // Row index for walk up
-                3, // Number of frames for walk up
-                frameDuration
+                texturePath, 17, 8, 2, 3, frameDuration
         );
 
         walkDownAnimation = AnimationUtils.createAnimationFromRow(
-                "character.png",
-                17, // Total columns in rows 1-3
-                8, // Total rows in sprite sheet
-                0, // Row index for walk down
-                3, // Number of frames for walk up
-                frameDuration
+                texturePath, 17, 8, 0, 3, frameDuration
         );
 
         // Placeholder for rows 4-7 (action animations)
@@ -110,11 +94,16 @@ public class Player extends DynamicGameObject {
             System.out.println("Player took " + damageAmount + " damage from " + damageSource);
             if (hearts <= 0) {
                 System.out.println("Player has died!");
-                // Additional logic for death can be added here
+                triggerGameOver();// Call the game over logic
+                isGameOver = true; // Set the game over flag
             }
         }
     }
 
+
+    public void triggerGameOver(){
+        GameScreen.setGameOver(true); // Assuming GameScreen manages screen transitions
+    }
     // Getters for the player's current direction and animations
     public int getCurrentDirection() {
         return currentDirection;
@@ -153,6 +142,26 @@ public class Player extends DynamicGameObject {
         return hearts;
     }
 
+    public void setHearts(int hearts) {
+        this.hearts = hearts;
+    }
+
+    public float getSpeed() {
+        return speed;
+    }
+
+    public void setSpeed(float speed) {
+        this.speed = speed;
+    }
+
+    public boolean isGameOver() {
+        return isGameOver;
+    }
+
+    public void setGameOver(boolean gameOver) {
+        isGameOver = gameOver;
+    }
+
     /**
      * Updates the player's position and animation based on input.
      *
@@ -160,6 +169,13 @@ public class Player extends DynamicGameObject {
      */
     @Override
     public void update(float deltaTime) {
+        if (isGameOver) {
+            velocity.set(0, 0); // Stop all movement
+            currentDirection = IDLE; // Set to idle state
+            currentAnimation = idleAnimation; // Keep the idle animation
+            return; // Skip further updates
+        }
+
         velocity.set(0, 0); // Reset velocity
 
         int horizontal = 0;

@@ -6,6 +6,7 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.ScreenUtils;
@@ -39,6 +40,9 @@ public class GameScreen implements Screen {
     // Player and slimes
     private final Player player;
     private final List<Slime> slimes;
+
+    //game flags
+    private static boolean gameOver = false;
 
     /**
      * Constructor for GameScreen. Sets up the camera, font, maze, player, and slimes.
@@ -111,6 +115,10 @@ public class GameScreen implements Screen {
         camera.update();
     }
 
+    public static void setGameOver(boolean state) {
+        gameOver = state;
+    }
+
     /**
      * Renders the maze, player, and slimes.
      *
@@ -152,9 +160,66 @@ public class GameScreen implements Screen {
         }
 
         // Render text
-        font.draw(batch, "Press ESC to go to menu", camera.position.x - 100, camera.position.y + 200);
+        font.draw(batch, "Press ESC to go to menu", camera.position.x + 320, camera.position.y + 410);
+
+        if (gameOver) {
+            renderGameOverScreen();
+        }
 
         batch.end();
+    }
+
+    public void renderGameOverScreen() {
+        SpriteBatch batch = new SpriteBatch();
+        BitmapFont bigFont = new BitmapFont(); // Replace with custom font if needed
+        BitmapFont smallFont = new BitmapFont(); // Replace with custom font if needed
+        bigFont.getData().setScale(2.5f); // Scale up for big text
+        smallFont.getData().setScale(1.2f); // Scale down for smaller text
+
+        batch.begin();
+
+// Set scales
+        bigFont.getData().setScale(4.0f);
+        smallFont.getData().setScale(2.5f);
+
+// Initialize a GlyphLayout
+        GlyphLayout layout = new GlyphLayout();
+
+// Center "You're dead!" message
+        layout.setText(bigFont, "You're dead!");
+        float bigTextWidth = layout.width;
+        float bigTextX = (Gdx.graphics.getWidth() - bigTextWidth) / 2; // Center horizontally
+        float bigTextY = 600; // Adjust vertically
+        bigFont.draw(batch, "You're dead!", bigTextX, bigTextY);
+
+// Center secondary message
+        layout.setText(smallFont, "Sometimes a journey just doesn't end well...");
+        float smallTextWidth1 = layout.width;
+        float smallTextX1 = (Gdx.graphics.getWidth() - smallTextWidth1) / 2;
+        float smallTextY1 = bigTextY - 50; // Below the main message
+        smallFont.draw(batch, "Sometimes a journey just doesn't end well...", smallTextX1, smallTextY1);
+
+// Center restart prompt
+        layout.setText(smallFont, "Press r to return to the main screen and restart the game");
+        float smallTextWidth2 = layout.width;
+        float smallTextX2 = (Gdx.graphics.getWidth() - smallTextWidth2) / 2;
+        float smallTextY2 = smallTextY1 - 50; // Below the secondary message
+        smallFont.draw(batch, "Press r to return to the main screen and restart the game", smallTextX2, smallTextY2);
+
+        batch.end();
+
+        // Handle input to restart or return to the main screen
+        if (Gdx.input.isKeyPressed(Input.Keys.R)) {
+            restartGame();
+        }
+    }
+
+    private void restartGame() {
+        // Reset the game state
+        player.setHearts(10); // Reset player's health
+        gameOver = false;// Exit the game over screen
+        player.setGameOver(false);
+        game.goToMenu();// Switch to main menu or reload the game screen
     }
 
     private void renderMaze() {

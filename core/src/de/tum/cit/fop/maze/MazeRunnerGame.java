@@ -55,7 +55,7 @@ public class MazeRunnerGame extends Game {
         this.loadCharacterAnimation(); // Load character animation
 
         // Initialize the player object
-        player = new Player(100, 100, 32, 32); // Position at (100, 100), size 32x32
+        player = new Player(100, 100, 32, 32, this.gameScreen); // Position at (100, 100), size 32x32
 
         // Play some background music
         Music backgroundMusic = Gdx.audio.newMusic(Gdx.files.internal("background.mp3"));
@@ -63,19 +63,6 @@ public class MazeRunnerGame extends Game {
         backgroundMusic.play();
 
         goToMenu(); // Navigate to the menu screen
-
-        characterDownAnimation = AnimationUtils.createAnimationFromRow(
-                "character.png", 4, 8, 0, 4, 0.1f // Row 0, 4 frames in this row
-        );
-        characterRightAnimation = AnimationUtils.createAnimationFromRow(
-                "character.png", 4, 8, 1, 4, 0.1f // Row 1, 4 frames in this row
-        );
-        characterUpAnimation = AnimationUtils.createAnimationFromRow(
-                "character.png", 4, 8, 2, 4, 0.1f // Row 2, 4 frames in this row
-        );
-        characterLeftAnimation = AnimationUtils.createAnimationFromRow(
-                "character.png", 4, 8, 3, 4, 0.1f // Row 3, 4 frames in this row
-        );
     }
 
     public static Animation<TextureRegion> createAnimationFromRow(
