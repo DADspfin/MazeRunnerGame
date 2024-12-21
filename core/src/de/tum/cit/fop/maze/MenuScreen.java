@@ -2,6 +2,7 @@ package de.tum.cit.fop.maze;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
@@ -23,6 +24,8 @@ public class MenuScreen implements Screen {
     private Animation<TextureRegion> backgroundAnimation; // Анимация фона
     private float stateTime = 0;                          // Время для отслеживания текущего кадра
 
+    private Music menuMusic;                              // Музыка для главного меню
+
     public MenuScreen(MazeRunnerGame game) {
         this.game = game;
 
@@ -32,7 +35,11 @@ public class MenuScreen implements Screen {
         TextureRegion frame3 = new TextureRegion(new Texture("menuframe3.png"));
 
         // Создаем анимацию из кадров
-        backgroundAnimation = new Animation<>(0.25f, frame1, frame2, frame3); // 0.5 секунд на кадр
+        backgroundAnimation = new Animation<>(0.5f, frame1, frame2, frame3); // 0.5 секунд на кадр
+
+        // Загружаем музыку
+        menuMusic = Gdx.audio.newMusic(Gdx.files.internal("menu_music.mp3"));
+        menuMusic.setLooping(true);  // Зацикливаем музыку
 
         // Создаем сцену
         stage = new Stage(new ScreenViewport(), game.getSpriteBatch());
@@ -73,6 +80,12 @@ public class MenuScreen implements Screen {
     }
 
     @Override
+    public void show() {
+        Gdx.input.setInputProcessor(stage);
+        menuMusic.play(); // Воспроизводим музыку при показе меню
+    }
+
+    @Override
     public void render(float delta) {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
@@ -103,11 +116,12 @@ public class MenuScreen implements Screen {
     @Override
     public void dispose() {
         stage.dispose();
+        menuMusic.dispose(); // Освобождаем ресурсы музыки
     }
 
     @Override
-    public void show() {
-        Gdx.input.setInputProcessor(stage);
+    public void hide() {
+        menuMusic.stop(); // Останавливаем музыку при переходе из меню
     }
 
     @Override
@@ -115,7 +129,4 @@ public class MenuScreen implements Screen {
 
     @Override
     public void resume() {}
-
-    @Override
-    public void hide() {}
 }
