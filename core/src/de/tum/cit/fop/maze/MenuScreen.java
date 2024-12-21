@@ -20,6 +20,7 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 public class MenuScreen implements Screen {
 
     private final Stage stage;
+    private final MazeRunnerGame game;
 
     /**
      * Constructor for MenuScreen. Sets up the camera, viewport, stage, and UI elements.
@@ -27,6 +28,8 @@ public class MenuScreen implements Screen {
      * @param game The main game class, used to access global resources and methods.
      */
     public MenuScreen(MazeRunnerGame game) {
+        this.game = game;
+
         var camera = new OrthographicCamera();
         camera.zoom = 1.5f; // Set camera zoom for a closer view
 
@@ -38,15 +41,36 @@ public class MenuScreen implements Screen {
         stage.addActor(table); // Add the table to the stage
 
         // Add a label as a title
-        table.add(new Label("Hello World from the Menu!", game.getSkin(), "title")).padBottom(80).row();
+        table.add(new Label("Main Menu", game.getSkin(), "title")).padBottom(80).row();
 
-        // Create and add a button to go to the game screen
-        TextButton goToGameButton = new TextButton("Go To Game", game.getSkin());
-        table.add(goToGameButton).width(300).row();
-        goToGameButton.addListener(new ChangeListener() {
+        // Create and add a button to continue the game
+        TextButton continueButton = new TextButton("Continue", game.getSkin());
+        table.add(continueButton).width(300).padBottom(20).row();
+        continueButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                game.goToGame(); // Change to the game screen when button is pressed
+                game.goToGame(); // Return to the active game screen
+            }
+        });
+
+        // Create and add a button to select a maze
+        TextButton selectMazeButton = new TextButton("Select a Maze", game.getSkin());
+        table.add(selectMazeButton).width(300).padBottom(20).row();
+        selectMazeButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                System.out.println("Select Maze button clicked");
+                // Add functionality for maze selection
+            }
+        });
+
+        // Create and add an exit button
+        TextButton exitButton = new TextButton("Exit", game.getSkin());
+        table.add(exitButton).width(300).row();
+        exitButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                Gdx.app.exit(); // Exit the application
             }
         });
     }
@@ -65,26 +89,20 @@ public class MenuScreen implements Screen {
 
     @Override
     public void dispose() {
-        // Dispose of the stage when screen is disposed
-        stage.dispose();
+        stage.dispose(); // Dispose of the stage when screen is disposed
     }
 
     @Override
     public void show() {
-        // Set the input processor so the stage can receive input events
-        Gdx.input.setInputProcessor(stage);
-    }
-
-    // The following methods are part of the Screen interface but are not used in this screen.
-    @Override
-    public void pause() {
+        Gdx.input.setInputProcessor(stage); // Set the input processor for the stage
     }
 
     @Override
-    public void resume() {
-    }
+    public void pause() {}
 
     @Override
-    public void hide() {
-    }
+    public void resume() {}
+
+    @Override
+    public void hide() {}
 }
