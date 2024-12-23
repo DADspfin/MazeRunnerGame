@@ -1,7 +1,6 @@
 package de.tum.cit.fop.maze.game.objects;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -20,6 +19,7 @@ public class Player extends DynamicGameObject {
     private Animation<TextureRegion> currentAnimation; // Current animation
     private float stateTime; // Tracks animation frame timing
     private final GameScreen screen;
+    private int keys = 0; // Track the number of keys the player has
     // Direction constants
     public static final int IDLE = 0;
     public static final int WALKING_LEFT = 1;
@@ -27,6 +27,7 @@ public class Player extends DynamicGameObject {
     public static final int WALKING_DOWN = 3;
     public static final int WALKING_UP = 4;
     private int currentDirection = IDLE; // Player's current direction
+
 
     private boolean isGameOver = false;
 
@@ -162,6 +163,46 @@ public class Player extends DynamicGameObject {
         isGameOver = gameOver;
     }
 
+    public int getKeys() {
+        return keys;
+    }
+
+    public void setKeys(int keys) {
+        this.keys = keys;
+    }
+
+    /**
+     * Checks if the player has at least one key.
+     *
+     * @return True if the player has one or more keys, false otherwise
+     */
+    public boolean hasKey() {
+        return keys > 0;
+    }
+
+    /**
+     * Increases the number of keys the player has by 1.
+     */
+    public void pickUpKey() {
+        this.keys++;
+        System.out.println("Player now has " + keys + " key(s).");
+    }
+
+    /**
+     * Decreases the number of keys the player has by 1.
+     * This can be used when the player unlocks an exit or door.
+     *
+     * @throws IllegalStateException if the player has no keys to use
+     */
+    public void useKey() {
+        if (keys > 0) {
+            this.keys--;  //TODO: Vincent needs to modify this part so it deduct according to the requirement of the level: ex. level 1 one key, level 2 two keys etc.
+            System.out.println("Remaining keys: " + keys);
+        } else {
+            throw new IllegalStateException("Player has no keys to use!");
+        }
+    }
+
     /**
      * Updates the player's position and animation based on input.
      *
@@ -237,4 +278,3 @@ public class Player extends DynamicGameObject {
         }
     }
 }
-
