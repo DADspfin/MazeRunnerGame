@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.ScreenUtils;
+import de.tum.cit.fop.maze.game.objects.Key;
 import de.tum.cit.fop.maze.game.objects.Player;
 import de.tum.cit.fop.maze.game.objects.Slime;
 
@@ -27,7 +28,7 @@ public class GameScreen implements Screen {
     private final MazeRunnerGame game;
     private final OrthographicCamera camera;
     private final BitmapFont font;
-    private final SpriteBatch batch;
+    private SpriteBatch batch;
 
     private float sinusInput = 0f;
     private float stateTime = 0f;
@@ -36,6 +37,7 @@ public class GameScreen implements Screen {
     private Map<String, Integer> maze;
     private Texture tilesheet;
     private TextureRegion wallTexture;
+    private Key key;
 
     // Player and slimes
     private final Player player;
@@ -120,7 +122,7 @@ public class GameScreen implements Screen {
     }
 
     /**
-     * Renders the maze, player, and slimes.
+     * Renders the maze, player, slimes, and key.
      *
      * @param delta Time elapsed since the last frame.
      */
@@ -128,7 +130,7 @@ public class GameScreen implements Screen {
     public void render(float delta) {
         float clampedDelta = Math.min(delta, 0.1f);
 
-        ScreenUtils.clear(0, 0, 0, 1);
+        ScreenUtils.clear(0, 0, 0, 1); // Clear the screen
 
         // Handle input for returning to the menu
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
@@ -141,6 +143,11 @@ public class GameScreen implements Screen {
         player.update(clampedDelta);
         for (Slime slime : slimes) {
             slime.update(clampedDelta, player);
+        }
+
+        // Check for player interaction with the key
+        if (!key.isCollected() && key.checkCollision(player)) {
+            key.interact(player); // This triggers the interaction logic
         }
 
         stateTime += clampedDelta;
@@ -157,6 +164,11 @@ public class GameScreen implements Screen {
         // Render the slimes
         for (Slime slime : slimes) {
             slime.render(batch);
+        }
+
+        // Render the key (if it's not collected)
+        if (!key.isCollected()) {
+            key.render(batch);
         }
 
         // Render text
@@ -257,6 +269,11 @@ public class GameScreen implements Screen {
 
     @Override
     public void show() {
+        batch = new SpriteBatch();
+
+        // Make sure to provide the width, height, and texturePath
+        //TODO: VINCENT please redo this part later because the key should have different spawnpoints in  different levels
+        key = new Key(500, 300, 128, 32, "assets/keyIcons.png"); // Position (500, 300), size (128, 32), and texture path
     }
 
     @Override
@@ -269,5 +286,6 @@ public class GameScreen implements Screen {
         for (Slime slime : slimes) {
             slime.dispose();
         }
+        key.dispose();
     }
 }

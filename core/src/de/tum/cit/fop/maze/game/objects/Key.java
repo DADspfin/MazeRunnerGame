@@ -3,8 +3,19 @@ package de.tum.cit.fop.maze.game.objects;
 //TODO: @William still needs to create a texture rendering for the key;
 //TODO: @Vincent needs to link the Player interaction with the Exit to see if the number of keys matched the requirement of the exit; this should be done through Player and Exit Classes via the Interactable interface (it won't/shouldn't conflict with William's implementation of textures)
 
-public class Key extends StaticGameObject implements Interactable{
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+
+public class Key extends StaticGameObject implements Interactable {
+    private float x, y;
     private boolean isCollected;
+    private Texture keyTexture;
+    private Sprite keySprite;
+
+    private boolean disposed = false;
 
     /**
      * Constructor for the Key object.
@@ -16,24 +27,62 @@ public class Key extends StaticGameObject implements Interactable{
      * @param texturePath Path to the texture file
      */
     public Key(float x, float y, float width, float height, String texturePath) {
+        // Call the constructor of the superclass StaticGameObject
         super(x, y, width, height, texturePath);
         this.isCollected = false;
+
+        // Load the texture from the sprite sheet
+        keyTexture = new Texture(Gdx.files.internal(texturePath)); // Use the texturePath passed in
+
+        // Create a TextureRegion (assuming the key is in a single frame)
+        TextureRegion keyRegion = new TextureRegion(keyTexture, 0, 0, 33, 32); // Adjust to match key's position and size in the sprite sheet
+        keySprite = new Sprite(keyRegion);
+
+        // Set the position of the sprite
+        setPosition(x, y);
     }
 
-    /**
-     * Marks the key as collected.
-     */
+    public void setPosition(float x, float y) {
+        this.x = x;
+        this.y = y;
+        keySprite.setPosition(x, y);
+    }
+
+    // Render method to draw the key sprite
+    public void render(SpriteBatch batch) {
+        keySprite.draw(batch);
+    }
+
+    // Dispose of resources when the key is no longer needed
+    public void dispose() {
+        if (!disposed) {
+            keyTexture.dispose();
+            disposed = true;
+        }
+    }
+
+    // Marks the key as collected
     public void collect() {
         this.isCollected = true;
+        this.dispose();
+    }
+
+    // Checks if the key is collected
+    public boolean isCollected() {
+        return isCollected;
     }
 
     /**
-     * Checks if the key is already collected.
+     * Checks if the key collides with the player.
      *
-     * @return True if collected, false otherwise.
+     * @param player The player object to check collision against.
+     * @return True if the player collides with the key, false otherwise.
      */
-    public boolean isCollected() {
-        return isCollected;
+    public boolean checkCollision(Player player) {
+        return x < player.getX() + player.getWidth() &&
+                x + getWidth() > player.getX() &&
+                y < player.getY() + player.getHeight() &&
+                y + getHeight() > player.getY();
     }
 
     @Override
