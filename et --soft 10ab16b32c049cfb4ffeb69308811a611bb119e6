@@ -1,0 +1,101 @@
+[33mcommit 5b3a16033e4ecf550cae8531f7c1e277b008176f[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Author: Arnur <go76nob@mytum.de>
+Date:   Sun Dec 22 18:56:13 2024 +0100
+
+    Main Menu font change. And change of some textures, Loading it 2-nd times because not all textures were download
+
+[33mcommit 494d5bc1285732c23f23532af9751d64a324381b[m
+Author: Arnur <go76nob@mytum.de>
+Date:   Sun Dec 22 18:54:49 2024 +0100
+
+    Main Menu font change. And change of some textures
+
+[33mcommit ec5a35ab29f2e34c6d65016f20f2b291c6cf4dcf[m
+Author: Arnur <go76nob@mytum.de>
+Date:   Sat Dec 21 20:03:42 2024 +0100
+
+    7
+
+[33mcommit 10ab16b32c049cfb4ffeb69308811a611bb119e6[m
+Author: Arnur <go76nob@mytum.de>
+Date:   Sat Dec 21 19:10:13 2024 +0100
+
+    Main Menu exit Select a level1
+
+[33mcommit c1176527030553d5de7f297d7f3f957a3cb3a65d[m
+Author: Arnur <go76nob@mytum.de>
+Date:   Sat Dec 21 18:57:19 2024 +0100
+
+    Main Menu exit Select a level1
+
+[33mcommit 82c9258d7cd0d81b865c052ffba123b37676d7e6[m
+Author: Arnur <go76nob@mytum.de>
+Date:   Sat Dec 21 18:07:53 2024 +0100
+
+    Main Menu exit Select a level1
+
+[33mcommit ed328fd15ea67013947c14834737418cf62f1d18[m
+Author: Arnur <go76nob@mytum.de>
+Date:   Sat Dec 21 14:40:29 2024 +0100
+
+    Main Menu exit Select a level
+
+[33mcommit fa8e24cb0f905748ac7460f9776e82bec3272d10[m
+Author: go57toq <tzhl.lin@tum.de>
+Date:   Fri Dec 13 17:53:48 2024 +0100
+
+    Updated the code to handle properly when Player is dead (GameOver)
+
+[33mcommit 96b78fadb5e0ce2a21847cd370b0c1a7bbda821a[m
+Author: go57toq <tzhl.lin@tum.de>
+Date:   Mon Dec 9 22:07:32 2024 +0100
+
+    Modified graphic rendering of Player, and fixed the file path finding issue of method MazeLoader
+
+[33mcommit 4a25c6ae6fd24e3977875a08280d5c839d315bba[m
+Author: go52won <go52won@mytum.de>
+Date:   Sun Dec 8 16:58:44 2024 +0100
+
+    Task 1,2
+
+[33mcommit 86c10d9ffe766aa6e823d9098edcb459dc66e13a[m
+Author: Arnur <go76nob@mytum.de>
+Date:   Fri Dec 6 17:43:01 2024 +0100
+
+    Added slime and damage method
+
+[33mcommit 0b204bc25e18df223fb505f5b5d564e789f067b1[m
+Author: Arnur <go76nob@mytum.de>
+Date:   Fri Dec 6 17:42:39 2024 +0100
+
+    Added slime and damage method
+
+[33mcommit bf76e087ebd31b438bce38bc973663bc5cdb222f[m
+Author: go57toq <tzhl.lin@tum.de>
+Date:   Thu Dec 5 22:53:24 2024 +0100
+
+    Modified a lot of methods in classes and removed redundant codes. Rendering for Player is a bit more polished.
+
+[33mcommit bc45ef653f438d8ff1b2b36d293a3fbbd191e26d[m
+Author: go57toq <tzhl.lin@tum.de>
+Date:   Thu Dec 5 18:33:10 2024 +0100
+
+    Added Player and AnimationUtils and implemented changes in other classes so that Player moves. Rendering for Player still need polishing.
+
+[33mcommit 273c34c4c5df7bf9ae3a43c4ac12a91507e4594e[m
+Author: go57toq <tzhl.lin@tum.de>
+Date:   Sat Nov 30 14:29:09 2024 +0100
+
+    Initial commit: Added 3 GameObject superclasses to the basic project structure
+
+[33mcommit fe9786435deecb7ba2a951c16a274f571de7b036[m
+Author: go57toq <tzhl.lin@tum.de>
+Date:   Thu Nov 28 21:29:19 2024 +0100
+
+    Initial commit: Added basic project structure and three Object superclasses
+
+[33mcommit 1ec806214f7ec199f471eb256c019a3093cb6f21[m
+Author: Patrick Bassner <patrick@bassner.de>
+Date:   Tue Dec 12 02:45:20 2023 +0100
+
+    Initial commit
