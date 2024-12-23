@@ -6,7 +6,6 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.ScreenUtils;
@@ -18,10 +17,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-/**
- * The GameScreen class is responsible for rendering the gameplay screen.
- * It handles the game logic and rendering of the game elements.
- */
 public class GameScreen implements Screen {
 
     private final MazeRunnerGame game;
@@ -29,7 +24,6 @@ public class GameScreen implements Screen {
     private final BitmapFont font;
     private final SpriteBatch batch;
 
-    private float sinusInput = 0f;
     private float stateTime = 0f;
 
     // Maze-related fields
@@ -41,15 +35,9 @@ public class GameScreen implements Screen {
     private final Player player;
     private final List<Slime> slimes;
 
-    //game flags
+    // Game flags
     private static boolean gameOver = false;
 
-    /**
-     * Constructor for GameScreen. Sets up the camera, font, maze, player, and slimes.
-     *
-     * @param game   The main game class.
-     * @param player The player object.
-     */
     public GameScreen(MazeRunnerGame game, Player player) {
         this.game = game;
         this.player = player;
@@ -62,6 +50,7 @@ public class GameScreen implements Screen {
         font = game.getSkin().getFont("font");
         batch = game.getSpriteBatch();
 
+        // Load the maze
         String relativePath = "maps/level-1.properties"; // Relative path from the project root
         String basePath = System.getProperty("user.dir"); // Current working directory
         String fullPath = basePath + File.separator + relativePath;
@@ -84,8 +73,8 @@ public class GameScreen implements Screen {
 
         // Initialize slimes
         slimes = new ArrayList<>();
-        slimes.add(new Slime(200, 200));
-        slimes.add(new Slime(300, 400));
+        slimes.add(new Slime(200, 200, player)); // Pass player reference
+        slimes.add(new Slime(300, 400, player)); // Pass player reference
     }
 
     private int getMazeWidth() {
@@ -119,114 +108,73 @@ public class GameScreen implements Screen {
         gameOver = state;
     }
 
-    /**
-     * Renders the maze, player, and slimes.
-     *
-     * @param delta Time elapsed since the last frame.
-     */
     @Override
     public void render(float delta) {
+        if (gameOver) {
+            renderGameOverScreen(); // Отдельный экран для состояния "Game Over"
+            return; // Останавливаем дальнейшее выполнение
+        }
+
         float clampedDelta = Math.min(delta, 0.1f);
 
         ScreenUtils.clear(0, 0, 0, 1);
 
-        // Handle input for returning to the menu
-        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
-            game.goToMenu();
-        }
-
+        // Обновление камеры
         camera.update();
 
-        // Update player and slimes
+        // Обновление игрока и слаймов
         player.update(clampedDelta);
         for (Slime slime : slimes) {
-            slime.update(clampedDelta, player);
+            slime.update(clampedDelta);
         }
-
-        stateTime += clampedDelta;
 
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
 
-        // Render the maze
+        // Рендеринг элементов игры
         renderMaze();
-
-        // Render the player
         player.draw(batch);
-
-        // Render the slimes
         for (Slime slime : slimes) {
             slime.render(batch);
         }
 
-        // Render text
         font.draw(batch, "Press ESC to go to menu", camera.position.x + 320, camera.position.y + 410);
-
-        if (gameOver) {
-            renderGameOverScreen();
-        }
 
         batch.end();
     }
 
     public void renderGameOverScreen() {
-        SpriteBatch batch = new SpriteBatch();
-        BitmapFont bigFont = new BitmapFont(); // Replace with custom font if needed
-        BitmapFont smallFont = new BitmapFont(); // Replace with custom font if needed
-        bigFont.getData().setScale(2.5f); // Scale up for big text
-        smallFont.getData().setScale(1.2f); // Scale down for smaller text
-
+        ScreenUtils.clear(0, 0, 0, 1); // Очистка экрана
         batch.begin();
-
-// Set scales
-        bigFont.getData().setScale(4.0f);
-        smallFont.getData().setScale(2.5f);
-
-// Initialize a GlyphLayout
-        GlyphLayout layout = new GlyphLayout();
-
-// Center "You're dead!" message
-        layout.setText(bigFont, "You're dead!");
-        float bigTextWidth = layout.width;
-        float bigTextX = (Gdx.graphics.getWidth() - bigTextWidth) / 2; // Center horizontally
-        float bigTextY = 600; // Adjust vertically
-        bigFont.draw(batch, "You're dead!", bigTextX, bigTextY);
-
-// Center secondary message
-        layout.setText(smallFont, "Sometimes a journey just doesn't end well...");
-        float smallTextWidth1 = layout.width;
-        float smallTextX1 = (Gdx.graphics.getWidth() - smallTextWidth1) / 2;
-        float smallTextY1 = bigTextY - 50; // Below the main message
-        smallFont.draw(batch, "Sometimes a journey just doesn't end well...", smallTextX1, smallTextY1);
-
-// Center restart prompt
-        layout.setText(smallFont, "Press r to return to the main screen and restart the game");
-        float smallTextWidth2 = layout.width;
-        float smallTextX2 = (Gdx.graphics.getWidth() - smallTextWidth2) / 2;
-        float smallTextY2 = smallTextY1 - 50; // Below the secondary message
-        smallFont.draw(batch, "Press r to return to the main screen and restart the game", smallTextX2, smallTextY2);
-
+        font.draw(batch, "Game Over! Press R to start again your journey.", camera.position.x - 200, camera.position.y + 20);
+        font.draw(batch, "Press ESC to return to the menu.", camera.position.x - 200, camera.position.y - 20);
         batch.end();
 
-        // Handle input to restart or return to the main screen
-        if (Gdx.input.isKeyPressed(Input.Keys.R)) {
+        // Возврат в меню по нажатию клавиши ESC
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
+            game.goToMenu();
+        }
+
+        // Перезапуск уровня по нажатию клавиши R
+        if (Gdx.input.isKeyJustPressed(Input.Keys.R)) {
             restartGame();
         }
     }
 
     private void restartGame() {
-        // Reset the game state
-        player.setHearts(10); // Reset player's health
-        gameOver = false;// Exit the game over screen
-        player.setGameOver(false);
-        game.goToMenu();// Switch to main menu or reload the game screen
+        gameOver = false; // Сброс состояния Game Over
+        player.reset(); // Сброс состояния игрока
+
+        // Пересоздание слаймов
+        slimes.clear();
+        slimes.add(new Slime(200, 200, player));
+        slimes.add(new Slime(300, 400, player));
     }
 
     private void renderMaze() {
         int mazeWidth = getMazeWidth();
         int mazeHeight = getMazeHeight();
 
-        // Dynamically scale each tile to fit the screen
         float tileWidth = Gdx.graphics.getWidth() / (float) mazeWidth;
         float tileHeight = Gdx.graphics.getHeight() / (float) mazeHeight;
 
@@ -265,9 +213,16 @@ public class GameScreen implements Screen {
 
     @Override
     public void dispose() {
-        player.dispose();
+        if (player != null) {
+            player.dispose();
+        }
         for (Slime slime : slimes) {
-            slime.dispose();
+            if (slime != null) {
+                slime.dispose();
+            }
+        }
+        if (batch != null) {
+            batch.dispose();
         }
     }
 }
