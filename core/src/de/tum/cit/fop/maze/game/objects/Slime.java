@@ -1,101 +1,182 @@
 package de.tum.cit.fop.maze.game.objects;
 
-import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import de.tum.cit.fop.maze.com.game.utils.AnimationUtils;
 
-public class Slime {
-    private float x, y; // Slime's position
-    private float speed = 50f; // Movement speed
-    private boolean chasing = false; // Whether the slime is chasing the player
-    private Texture slimeTexture; // Texture for rendering the slime
+public class Slime extends DynamicGameObject {
 
-    /**
-     * Constructor for Slime.
-     *
-     * @param startX The initial x-position of the slime.
-     * @param startY The initial y-position of the slime.
-     */
-    public Slime(float startX, float startY) {
-        this.x = startX;
-        this.y = startY;
-
-        // Load the slime texture
-        slimeTexture = new Texture("slime.png"); // Ensure slime.png is in the assets folder
+    public enum SlimeState {
+        STANDING,
+        RUNNING_LEFT,
+        RUNNING_RIGHT,
+        ATTACKING,
+        DAMAGED,
+        DYING
     }
 
-    /**
-     * Updates the slime's behavior (e.g., moving and checking collision with the player).
-     *
-     * @param deltaTime Time elapsed since the last frame.
-     * @param player    The player to interact with.
-     */
-    public void update(float deltaTime, Player player) {
-        if (chasing) {
-            // Move towards the player if chasing
-            moveTowardsPlayer(player, deltaTime);
+    private Animation<TextureRegion> standingAnimation;
+    private Animation<TextureRegion> runningLeftAnimation;
+    private Animation<TextureRegion> runningRightAnimation;
+    private Animation<TextureRegion> attackAnimation;
+    private Animation<TextureRegion> damagedAnimation;
+    private Animation<TextureRegion> deathAnimation;
+
+    private SlimeState currentState = SlimeState.STANDING;
+    private float stateTime = 0f;
+    private boolean isDead = false;
+    private float speed = 50f; // Скорость слайма
+    private Player player; // Ссылка на игрока для взаимодействия
+
+    public Slime(float x, float y, Player player) {
+        super(x, y, 32, 32, "slime.png");
+        this.player = player;
+        initializeAnimations();
+    }
+
+    private void initializeAnimations() {
+        // Установленные значения frameDuration для каждой анимации
+        standingAnimation = AnimationUtils.createAnimationFromCoordinates(
+                "slime.png",
+                new int[][]{
+                        {77, 21, 37, 40},
+                        {142, 27, 37, 30}
+                },
+                0.2f // Медленная анимация для стояния
+        );
+
+        runningLeftAnimation = AnimationUtils.createAnimationFromCoordinates(
+                "slime.png",
+                new int[][]{
+                        {81, 26, 31, 28},
+                        {14, 23, 39, 36}
+                },
+                0.1f // Быстрая анимация для бега влево
+        );
+
+        runningRightAnimation = AnimationUtils.createAnimationFromCoordinates(
+                "slime.png",
+                new int[][]{
+                        {335, 25, 34, 31},
+                        {17, 94, 28, 23}
+                },
+                0.1f // Быстрая анимация для бега вправо
+        );
+
+        attackAnimation = AnimationUtils.createAnimationFromCoordinates(
+                "slime.png",
+                new int[][]{
+                        {205, 161, 36, 21},
+                        {273, 155, 32, 26},
+                        {333, 149, 38, 33}
+                },
+                0.08f // Быстрая атака
+        );
+
+        damagedAnimation = AnimationUtils.createAnimationFromCoordinates(
+                "slime.png",
+                new int[][]{
+                        {76, 145, 36, 31},
+                        {19, 145, 28, 32}
+                },
+                0.05f // Очень быстрая анимация получения урона
+        );
+
+        deathAnimation = AnimationUtils.createAnimationFromCoordinates(
+                "slime.png",
+                new int[][]{
+                        {14, 287, 38, 23},
+                        {72, 284, 45, 25},
+                        {140, 282, 44, 29}
+                },
+                0.2f // Медленная анимация смерти
+        );
+    }
+
+    @Override
+    public void update(float deltaTime) {
+        super.update(deltaTime);
+        stateTime += deltaTime;
+
+        if (isDead) {
+            currentState = SlimeState.DYING;
+            return;
+        }
+
+        // Если игрок рядом, начинаем преследование
+        if (isPlayerClose()) {
+            moveToPlayer(deltaTime);
         } else {
-            // Random movement when not chasing
-            moveRandomly(deltaTime);
+            currentState = SlimeState.STANDING;
         }
 
-        // Check collision with the player
-        if (checkCollision(player)) {
-            player.takeDamage("Slime", 1); // Deal 1 damage to the player
-            chasing = true; // Slime starts chasing the player
+        // Проверка столкновения с игроком для атаки
+        if (checkCollisionWithPlayer()) {
+            currentState = SlimeState.ATTACKING;
+            player.takeDamage("Slime", 1);
         }
     }
 
-    private void moveTowardsPlayer(Player player, float deltaTime) {
-        float dx = player.getX() - x;
-        float dy = player.getY() - y;
+    private boolean isPlayerClose() {
+        float distance = (float) Math.sqrt(
+                Math.pow(player.getX() - position.x, 2) + Math.pow(player.getY() - position.y, 2)
+        );
+        return distance < 100; // Например, 100 пикселей — радиус преследования
+    }
+
+    private void moveToPlayer(float deltaTime) {
+        float dx = player.getX() - position.x;
+        float dy = player.getY() - position.y;
         float distance = (float) Math.sqrt(dx * dx + dy * dy);
 
         if (distance > 0) {
-            x += (dx / distance) * speed * deltaTime;
-            y += (dy / distance) * speed * deltaTime;
+            position.x += (dx / distance) * speed * deltaTime;
+            position.y += (dy / distance) * speed * deltaTime;
+            currentState = dx < 0 ? SlimeState.RUNNING_LEFT : SlimeState.RUNNING_RIGHT;
         }
     }
 
-    private void moveRandomly(float deltaTime) {
-        // Simple random movement
-        x += Math.random() * speed * deltaTime - speed * deltaTime / 2;
-        y += Math.random() * speed * deltaTime - speed * deltaTime / 2;
+    private boolean checkCollisionWithPlayer() {
+        return Math.abs(player.getX() - position.x) < 20 && Math.abs(player.getY() - position.y) < 20;
     }
 
-    /**
-     * Checks whether the slime collides with the player.
-     *
-     * @param player The player object.
-     * @return True if the slime and player collide; otherwise, false.
-     */
-    public boolean checkCollision(Player player) {
-        return Math.abs(x - player.getX()) < 32 && Math.abs(y - player.getY()) < 32;
+    public void takeDamage(int damage) {
+        if (isDead) return;
+
+        currentState = SlimeState.DAMAGED;
+        if (damage >= 1) {
+            isDead = true;
+        }
     }
 
-    /**
-     * Renders the slime on the screen.
-     *
-     * @param batch The SpriteBatch used for rendering.
-     */
+    @Override
     public void render(SpriteBatch batch) {
-        batch.draw(slimeTexture, x, y); // Draw the slime at its position
-    }
+        Animation<TextureRegion> currentAnimation;
 
-    /**
-     * Disposes of the slime's resources.
-     */
-    public void dispose() {
-        if (slimeTexture != null) {
-            slimeTexture.dispose();
+        switch (currentState) {
+            case RUNNING_LEFT:
+                currentAnimation = runningLeftAnimation;
+                break;
+            case RUNNING_RIGHT:
+                currentAnimation = runningRightAnimation;
+                break;
+            case ATTACKING:
+                currentAnimation = attackAnimation;
+                break;
+            case DAMAGED:
+                currentAnimation = damagedAnimation;
+                break;
+            case DYING:
+                currentAnimation = deathAnimation;
+                break;
+            case STANDING:
+            default:
+                currentAnimation = standingAnimation;
+                break;
         }
-    }
 
-    // Getters for slime position
-    public float getX() {
-        return x;
-    }
-
-    public float getY() {
-        return y;
+        TextureRegion currentFrame = currentAnimation.getKeyFrame(stateTime, true);
+        batch.draw(currentFrame, position.x, position.y);
     }
 }
