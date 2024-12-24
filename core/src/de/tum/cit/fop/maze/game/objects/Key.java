@@ -14,6 +14,7 @@ public class Key extends StaticGameObject implements Interactable {
     private boolean isCollected;
     private Texture keyTexture;
     private Sprite keySprite;
+    private final int keyIndex;
 
     private boolean disposed = false;
 
@@ -26,7 +27,7 @@ public class Key extends StaticGameObject implements Interactable {
      * @param height Height of the key
      * @param texturePath Path to the texture file
      */
-    public Key(float x, float y, float width, float height, String texturePath) {
+    public Key(float x, float y, float width, float height, String texturePath, int keyIndex) {
         // Call the constructor of the superclass StaticGameObject
         super(x, y, width, height, texturePath);
         this.isCollected = false;
@@ -40,6 +41,8 @@ public class Key extends StaticGameObject implements Interactable {
 
         // Set the position of the sprite
         setPosition(x, y);
+
+        this.keyIndex = keyIndex;
     }
 
     public void setPosition(float x, float y) {
@@ -49,8 +52,14 @@ public class Key extends StaticGameObject implements Interactable {
     }
 
     // Render method to draw the key sprite
-    public void render(SpriteBatch batch) {
-        keySprite.draw(batch);
+    public void render(SpriteBatch batch, GameState gameState) {
+        if (!gameState.isKeyCollected(keyIndex)) {
+            if (keySprite != null && keySprite.getTexture() != null) {
+                keySprite.draw(batch);
+            } else {
+                System.err.println("Key sprite or texture is null during rendering!");
+            }
+        }
     }
 
     // Dispose of resources when the key is no longer needed
@@ -86,11 +95,12 @@ public class Key extends StaticGameObject implements Interactable {
     }
 
     @Override
-    public void interact(Player player) {
-        if (!isCollected()) {
-            collect();
+    public void interact(Player player, GameState gameState) {
+        if (!gameState.isKeyCollected(keyIndex)) {
+            gameState.collectKey(keyIndex);
             player.pickUpKey();
             System.out.println("Player interacted with the key and collected it!");
+            System.out.println("Key index: " + keyIndex);
         }
     }
 }

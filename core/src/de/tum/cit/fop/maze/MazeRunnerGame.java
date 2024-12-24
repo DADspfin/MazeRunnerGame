@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.Array;
 import de.tum.cit.fop.maze.com.game.utils.AnimationUtils;
+import de.tum.cit.fop.maze.game.objects.GameState;
 import de.tum.cit.fop.maze.game.objects.Player;
 import games.spooky.gdx.nativefilechooser.NativeFileChooser;
 
@@ -30,6 +31,8 @@ public class MazeRunnerGame extends Game {
 
     // Player object
     private Player player;
+
+    private GameState gameState;
 
     private Animation<TextureRegion> characterDownAnimation;
     private Animation<TextureRegion> characterRightAnimation;
@@ -62,7 +65,16 @@ public class MazeRunnerGame extends Game {
         backgroundMusic.setLooping(true);
         backgroundMusic.play();
 
+        int numKeys = 9; // total number of keys in game
+        gameState = new GameState(numKeys);
+        System.out.println("GameState created: " + gameState);
+
         goToMenu(); // Navigate to the menu screen
+    }
+
+
+    public GameState getGameState() {
+        return gameState;
     }
 
     public static Animation<TextureRegion> createAnimationFromRow(

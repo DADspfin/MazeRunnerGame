@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.ScreenUtils;
+import de.tum.cit.fop.maze.game.objects.GameState;
 import de.tum.cit.fop.maze.game.objects.Key;
 import de.tum.cit.fop.maze.game.objects.Player;
 import de.tum.cit.fop.maze.game.objects.Slime;
@@ -36,7 +37,8 @@ public class GameScreen implements Screen {
     private Map<String, Integer> maze;
     private Texture tilesheet;
     private TextureRegion wallTexture;
-    private Key key;
+    private List<Key> keys = new ArrayList<>();
+    private GameState gameState;
 
     // Player and slimes
     private final Player player;
@@ -44,6 +46,7 @@ public class GameScreen implements Screen {
 
     // Game flags
     private static boolean gameOver = false;
+    private int indexForKey = 0;
 
     /**
      * Constructor for GameScreen. Sets up the camera, font, maze, player, and slimes.
@@ -55,7 +58,7 @@ public class GameScreen implements Screen {
         this.game = game;
         this.player = player;
 
-        // Initialize the camera
+        // Initialize camera
         camera = new OrthographicCamera();
         camera.setToOrtho(false);
 
@@ -67,7 +70,6 @@ public class GameScreen implements Screen {
         String relativePath = "maps/level-1.properties"; // Relative path from the project root
         String basePath = System.getProperty("user.dir"); // Current working directory
         String fullPath = basePath + File.separator + relativePath;
-
         maze = MazeLoader.loadMaze(fullPath);
 
         if (maze == null || maze.isEmpty()) {
@@ -78,16 +80,19 @@ public class GameScreen implements Screen {
         tilesheet = new Texture("basictiles.png");
         wallTexture = new TextureRegion(tilesheet, 0, 0, 16, 16);
 
-        // Center the camera based on maze dimensions
+        // Center the camera
         centerCameraOnMaze();
 
-        // Initialize the player
+        // Initialize player
         this.player.setPosition(100, 100);
 
         // Initialize slimes
         slimes = new ArrayList<>();
-        slimes.add(new Slime(200, 200, player)); // Pass player reference
-        slimes.add(new Slime(300, 400, player)); // Pass player reference
+        slimes.add(new Slime(200, 200, player));
+        slimes.add(new Slime(300, 400, player));
+
+        // Initialize game state by retrieving it from the game
+        this.gameState = game.getGameState(); // Get the existing game state instance
     }
 
     private int getMazeWidth() {
@@ -129,8 +134,8 @@ public class GameScreen implements Screen {
     @Override
     public void render(float delta) {
         if (gameOver) {
-            renderGameOverScreen(); // Отдельный экран для состояния "Game Over"
-            return; // Останавливаем дальнейшее выполнение
+            renderGameOverScreen(); // Game Over screen
+            return; // Stop further execution
         }
 
         float clampedDelta = Math.min(delta, 0.1f);
@@ -151,8 +156,8 @@ public class GameScreen implements Screen {
         }
 
         // Check for player interaction with the key
-        if (!key.isCollected() && key.checkCollision(player)) {
-            key.interact(player); // This triggers the interaction logic
+        if (!keys.get(indexForKey).isCollected() && keys.get(indexForKey).checkCollision(player)) {
+            keys.get(indexForKey).interact(player, gameState); // Pass the gameState to key interaction
         }
 
         stateTime += clampedDelta;
@@ -171,17 +176,11 @@ public class GameScreen implements Screen {
             slime.render(batch);
         }
 
-        // Render the key (if it's not collected)
-        if (!key.isCollected()) {
-            key.render(batch);
-        }
+        // Render the key using GameState logic
+        keys.get(indexForKey).render(batch, gameState);
 
         // Render text
         font.draw(batch, "Press ESC to go to menu", camera.position.x + 320, camera.position.y + 410);
-
-        if (gameOver) {
-            renderGameOverScreen();
-        }
 
         batch.end();
     }
@@ -211,13 +210,32 @@ public class GameScreen implements Screen {
     }
 
     private void restartGame() {
-        gameOver = false; // Сброс состояния Game Over
-        player.reset(); // Сброс состояния игрока
+        gameOver = false; // Reset Game Over state
+        player.reset(); // Reset player state
 
-        // Пересоздание слаймов
+        // Recreate the slimes
         slimes.clear();
         slimes.add(new Slime(200, 200, player));
         slimes.add(new Slime(300, 400, player));
+
+        for (Key key : keys) {
+            key.dispose();
+        }
+
+        // Reset keys
+        //keys.clear(); //TODO: for each new game we should have cleared the keys, but right now whenever this method is called the game crashes. So I will solve it later
+        keys.add(new Key(500, 300, 128, 32, "assets/keyIcons.png", indexForKey)); // Add new keys
+        indexForKey++;
+        keys.add(new Key(1000, 500, 128, 32, "assets/keyIcons.png", indexForKey));
+
+        // Reset GameState
+        // Reinitialize the keysCollected array based on the number of keys
+        gameState = new GameState(keys.size());  // Create new GameState with correct number of keys
+        System.out.println("Game reset with " + keys.size() + " keys.");
+
+        // Optionally, reset the keysCollected array if needed (if you want to reset the collected status)
+        boolean[] newKeysCollected = new boolean[keys.size()];
+        gameState.setKeysCollected(newKeysCollected);
     }
 
     private void renderMaze() {
@@ -256,10 +274,14 @@ public class GameScreen implements Screen {
     @Override
     public void show() {
         batch = new SpriteBatch();
-
         // Make sure to provide the width, height, and texturePath
         //TODO: VINCENT please redo this part later because the key should have different spawnpoints in  different levels
-        key = new Key(500, 300, 128, 32, "assets/keyIcons.png"); // Position (500, 300), size (128, 32), and texture path
+
+        if (keys.isEmpty()) {
+            keys.add(new Key(500, 300, 128, 32, "assets/keyIcons.png", indexForKey));
+            indexForKey++;
+            keys.add(new Key(1000, 500, 128, 32, "assets/keyIcons.png", indexForKey));
+        }
     }
 
     @Override
@@ -276,7 +298,9 @@ public class GameScreen implements Screen {
                 slime.dispose();
             }
         }
-        key.dispose();
+        for (Key key : keys) {
+            key.dispose();
+        }
         if (batch != null) {
             batch.dispose();
         }
