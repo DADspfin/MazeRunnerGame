@@ -9,10 +9,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.ScreenUtils;
-import de.tum.cit.fop.maze.game.objects.GameState;
-import de.tum.cit.fop.maze.game.objects.Key;
-import de.tum.cit.fop.maze.game.objects.Player;
-import de.tum.cit.fop.maze.game.objects.Slime;
+import de.tum.cit.fop.maze.game.objects.*;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -38,6 +35,8 @@ public class GameScreen implements Screen {
     private Texture tilesheet;
     private TextureRegion wallTexture;
     private List<Key> keys = new ArrayList<>();
+    private List<CollectableLives> lives = new ArrayList<>();
+    private List<CollectablePowerUp> powerUps = new ArrayList<>();
     private GameState gameState;
 
     // Player and slimes
@@ -209,6 +208,7 @@ public class GameScreen implements Screen {
         }
     }
 
+    //restart game is not working properly now after the player died, we need to fix it: it has something to do with Collectable lives and powerUps (both unfinished currently); also clear() method not working properly
     private void restartGame() {
         gameOver = false; // Reset Game Over state
         player.reset(); // Reset player state
@@ -230,12 +230,11 @@ public class GameScreen implements Screen {
 
         // Reset GameState
         // Reinitialize the keysCollected array based on the number of keys
-        gameState = new GameState(keys.size());  // Create new GameState with correct number of keys
+        gameState = new GameState(keys.size(), lives.size(), powerUps.size());  // Create new GameState with correct number of keys
         System.out.println("Game reset with " + keys.size() + " keys.");
 
         // Optionally, reset the keysCollected array if needed (if you want to reset the collected status)
         boolean[] newKeysCollected = new boolean[keys.size()];
-        gameState.setKeysCollected(newKeysCollected);
     }
 
     private void renderMaze() {

@@ -7,11 +7,15 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import de.tum.cit.fop.maze.GameScreen;
 import de.tum.cit.fop.maze.com.game.utils.AnimationUtils;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class Player extends DynamicGameObject {
     private float speed = 100f;
     private float runMultiplier = 2.0f;
-    private int hearts = 10;
+    private int hearts = 10; // Player's lives (hearts)
     private int keys = 0; // Количество собранных ключей
+    private Map<String, Boolean> activePowerUps; // To track activated power-ups
     private Animation<TextureRegion> idleAnimation;
     private Animation<TextureRegion> walkLeftAnimation;
     private Animation<TextureRegion> walkRightAnimation;
@@ -43,9 +47,11 @@ public class Player extends DynamicGameObject {
         walkDownAnimation = AnimationUtils.createAnimationFromRow(texturePath, 17, 8, 0, 3, frameDuration);
     }
 
+    // Method to reset player data
     public void reset() {
         this.hearts = 10; // Сброс жизней
         this.keys = 0; // Сброс ключей
+        this.activePowerUps.clear(); // Reset active power-ups
         this.setPosition(100, 100); // Сброс позиции
         this.velocity.set(0, 0); // Сброс скорости
         this.currentDirection = IDLE; // Установка состояния на "стояние"
@@ -54,11 +60,13 @@ public class Player extends DynamicGameObject {
         this.isGameOver = false; // Сброс статуса "Game Over"
     }
 
+    // Method to pick up a key
     public void pickUpKey() {
         this.keys += 1; // Увеличиваем количество собранных ключей
         System.out.println("Key picked up! Total keys: " + this.keys);
     }
 
+    // Method to take damage
     public void takeDamage(String damageSource, int damageAmount) {
         if (hearts > 0) {
             hearts -= damageAmount;
@@ -69,8 +77,37 @@ public class Player extends DynamicGameObject {
         }
     }
 
+    // Game over trigger
     public void triggerGameOver() {
         GameScreen.setGameOver(true);
+    }
+
+    // Method to add lives (hearts)
+    public void addLives(int amount) {
+        this.hearts += amount;
+        // Optionally, update HUD or display a message to the player
+    }
+
+    // Method to activate a power-up
+    public void activatePowerUp(String powerUpType) {
+        activePowerUps.put(powerUpType, true);
+        // Apply effects for this power-up type
+        if ("SpeedBoost".equals(powerUpType)) {
+            // Apply speed boost
+            runMultiplier = 3.0f; // Example of speed boost
+        } else if ("Shield".equals(powerUpType)) {
+            // Activate shield
+            // Implement shield behavior (e.g., invincibility for a short time)
+        }
+    }
+
+    // Getters and setters
+    public int getHearts() {
+        return hearts;
+    }
+
+    public Map<String, Boolean> getActivePowerUps() {
+        return activePowerUps;
     }
 
     @Override

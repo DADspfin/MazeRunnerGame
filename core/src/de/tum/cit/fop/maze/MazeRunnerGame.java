@@ -65,8 +65,10 @@ public class MazeRunnerGame extends Game {
         backgroundMusic.setLooping(true);
         backgroundMusic.play();
 
-        int numKeys = 9; // total number of keys in game
-        gameState = new GameState(numKeys);
+        int numKeys = 9;// total number of keys in game
+        int numLives = 5;
+        int numPowerups = 2;
+        gameState = new GameState(numKeys, numLives, numPowerups);
         System.out.println("GameState created: " + gameState);
 
         goToMenu(); // Navigate to the menu screen
