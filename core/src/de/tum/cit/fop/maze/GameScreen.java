@@ -8,6 +8,11 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
+import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.ScreenUtils;
 import de.tum.cit.fop.maze.game.objects.*;
 
@@ -26,10 +31,16 @@ public class GameScreen implements Screen {
     private final OrthographicCamera camera;
     private final BitmapFont font;
     private SpriteBatch batch;
+    private TiledMap tiledMap;
+    private OrthogonalTiledMapRenderer mapRenderer;
+    private World world;
+    public static final float PPM = 100f; // Use the same value in both classes
+    private Box2DDebugRenderer box2DDebugRenderer;
 
     private float sinusInput = 0f;
     private float stateTime = 0f;
 
+    private MazeLoader mazeLoader; // Declare the MazeLoader object
     // Maze-related fields
     private Map<String, Integer> maze;
     private Texture tilesheet;
@@ -56,6 +67,8 @@ public class GameScreen implements Screen {
     public GameScreen(MazeRunnerGame game, Player player) {
         this.game = game;
         this.player = player;
+        this.box2DDebugRenderer = new Box2DDebugRenderer();
+        world = new World(new Vector2(0, 0), false);
 
         // Initialize camera
         camera = new OrthographicCamera();
@@ -65,22 +78,7 @@ public class GameScreen implements Screen {
         font = game.getSkin().getFont("font");
         batch = game.getSpriteBatch();
 
-        // Load the maze
-        String relativePath = "maps/level-1.properties"; // Relative path from the project root
-        String basePath = System.getProperty("user.dir"); // Current working directory
-        String fullPath = basePath + File.separator + relativePath;
-        maze = MazeLoader.loadMaze(fullPath);
 
-        if (maze == null || maze.isEmpty()) {
-            throw new IllegalStateException("Maze could not be loaded or is empty!");
-        }
-
-        // Load the tilesheet and extract the top-left corner tile for walls
-        tilesheet = new Texture("basictiles.png");
-        wallTexture = new TextureRegion(tilesheet, 0, 0, 16, 16);
-
-        // Center the camera
-        centerCameraOnMaze();
 
         // Initialize player
         this.player.setPosition(100, 100);
@@ -90,36 +88,16 @@ public class GameScreen implements Screen {
         slimes.add(new Slime(200, 200, player));
         slimes.add(new Slime(300, 400, player));
 
+        this.world = new World(new Vector2(0, 0), true);
+
         // Initialize game state by retrieving it from the game
         this.gameState = game.getGameState(); // Get the existing game state instance
     }
 
-    private int getMazeWidth() {
-        return maze.keySet().stream()
-                .mapToInt(key -> Integer.parseInt(key.split(",")[0]))
-                .max()
-                .orElse(0) + 1;
+    public World getWorld() {
+        return world; // Getter for the World instance
     }
 
-    private int getMazeHeight() {
-        return maze.keySet().stream()
-                .mapToInt(key -> Integer.parseInt(key.split(",")[1]))
-                .max()
-                .orElse(0) + 1;
-    }
-
-    private void centerCameraOnMaze() {
-        int mazeWidth = getMazeWidth();
-        int mazeHeight = getMazeHeight();
-
-        camera.position.set(
-                (mazeWidth * Gdx.graphics.getWidth() / mazeWidth) / 2f,
-                (mazeHeight * Gdx.graphics.getHeight() / mazeHeight) / 2f,
-                0
-        );
-
-        camera.update();
-    }
 
     public static void setGameOver(boolean state) {
         gameOver = state;
@@ -164,8 +142,6 @@ public class GameScreen implements Screen {
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
 
-        // Render the maze
-        renderMaze();
 
         // Render the player
         player.draw(batch);
@@ -182,6 +158,8 @@ public class GameScreen implements Screen {
         font.draw(batch, "Press ESC to go to menu", camera.position.x + 320, camera.position.y + 410);
 
         batch.end();
+
+        box2DDebugRenderer.render(world, camera.combined.scl(PPM));
     }
 
     public void renderGameOverScreen() {
@@ -237,25 +215,6 @@ public class GameScreen implements Screen {
         boolean[] newKeysCollected = new boolean[keys.size()];
     }
 
-    private void renderMaze() {
-        int mazeWidth = getMazeWidth();
-        int mazeHeight = getMazeHeight();
-
-        // Dynamically scale each tile to fit the screen
-        float tileWidth = Gdx.graphics.getWidth() / (float) mazeWidth;
-        float tileHeight = Gdx.graphics.getHeight() / (float) mazeHeight;
-
-        for (Map.Entry<String, Integer> entry : maze.entrySet()) {
-            String[] coordinates = entry.getKey().split(",");
-            int x = Integer.parseInt(coordinates[0]);
-            int y = Integer.parseInt(coordinates[1]);
-            int objectType = entry.getValue();
-
-            if (objectType == 0) { // Wall
-                batch.draw(wallTexture, x * tileWidth, y * tileHeight, tileWidth, tileHeight);
-            }
-        }
-    }
 
     @Override
     public void resize(int width, int height) {
@@ -274,7 +233,10 @@ public class GameScreen implements Screen {
     public void show() {
         batch = new SpriteBatch();
         // Make sure to provide the width, height, and texturePath
-        //TODO: VINCENT please redo this part later because the key should have different spawnpoints in  different levels
+        mazeLoader = new MazeLoader(this); // Initialize MazeLoader
+        tiledMap = mazeLoader.create("level1-1.tmx"); // Load the map
+
+        camera.setToOrtho(false, 448,240);
 
         if (keys.isEmpty()) {
             keys.add(new Key(500, 300, 128, 32, "assets/keyIcons.png", indexForKey));

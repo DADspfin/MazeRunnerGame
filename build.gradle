@@ -1,5 +1,5 @@
 buildscript {
-    
+
 
     repositories {
         mavenLocal()
@@ -9,7 +9,7 @@ buildscript {
         google()
     }
     dependencies {
-        
+
 
     }
 }
@@ -55,6 +55,7 @@ project(":desktop") {
         api "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdxVersion"
         api "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
         api "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-desktop"
+        api "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-desktop"
         implementation "games.spooky.gdx:gdx-nativefilechooser-desktop-lwjgl:$gdxNativefilechooserVersion"
     }
 }
@@ -66,6 +67,9 @@ project(":core") {
     dependencies {
         api "com.badlogicgames.gdx:gdx:$gdxVersion"
         api "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
+        api "com.badlogicgames.gdx:gdx-box2d:$gdxVersion" // Add this line
         implementation "games.spooky.gdx:gdx-nativefilechooser:$gdxNativefilechooserVersion"
+        implementation "com.badlogicgames.gdx:gdx-box2d:$gdxVersion"
+
     }
 }
