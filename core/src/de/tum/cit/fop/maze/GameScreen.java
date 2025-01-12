@@ -234,7 +234,25 @@ public class GameScreen implements Screen {
         batch = new SpriteBatch();
         // Make sure to provide the width, height, and texturePath
         mazeLoader = new MazeLoader(this); // Initialize MazeLoader
-        tiledMap = mazeLoader.create("level1-1.tmx"); // Load the map
+        String currentLevel = "level1"; // This can be changed dynamically later for level selection
+
+        switch (currentLevel) {
+            case "level2":
+                tiledMap = mazeLoader.create("level2-2.tmx");
+                break;
+            case "level3":
+                tiledMap = mazeLoader.create("level3-3.tmx");
+                break;
+            case "level4":
+                tiledMap = mazeLoader.create("level4-4.tmx");
+                break;
+            case "level5":
+                tiledMap = mazeLoader.create("level5-5.tmx");
+                break;
+            default:
+                tiledMap = mazeLoader.create("level1-1.tmx");
+                break;
+        }
 
         camera.setToOrtho(false, 448,240);
 

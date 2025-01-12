@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.11.0" orientation="orthogonal" renderorder="right-down" width="69" height="80" tilewidth="16" tileheight="16" infinite="0" nextlayerid="2" nextobjectid="1">
+ <tileset firstgid="1" source="../maps/basictiles.tsx"/>
+ <layer id="1" name="Tile Layer 1" width="69" height="80">
+  <data encoding="base64" compression="zlib">
+   eJztl1G2gzAIRN1B97/b99u+wRgCxGjunJMfHEBvU4mf4zg+LFlZ6q2V2TPSw/LAxI7BRGMw0RhMNAYTja3OpOVtzc7/sR7Pd82IRuZ6FpOo5ywvg0mlKplU1YNJrNeIZjPpfQfAxFcPJuO9RvVGJqt8289kUpmbke+tAxPbBxP1wUR9MFHfk5lUzKunM6moAxPb18uk8jx11TtDK+2TqGBS13t1JjP/e989PfeWVa9CMKnrDZPxOjCxfTBRH0zUBxP1zTjbR84dkfxIvzu0yneQVRcmWndHJrO+J0bu6678Vi5M7Gurz53WPVXk7rJPPL/HLkw8OTCxPU9m4n1X7cDEe231ebI6k0xlMxl5PpiM51g+mNgemGgMJhqDicbeyKS3Fkx8TLLOYWd9znyR3m/cJ9F6MMnpA5PrHJjApCcHJnswGZnfV75eJp6zxKzzTqtGZG95mKwmmKhgohph0lsXJpoLE82FieZmM6mY2955HnmmKiZ3CyaqGUw8gkl/r5mKMskWTObU9Aomqoz3Cet3/QEINDFX
+  </data>
+ </layer>
+</map>
