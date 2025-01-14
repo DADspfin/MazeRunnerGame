@@ -38,8 +38,8 @@ public class MazeLoader extends  ApplicationAdapter{
         parseTileCollisions();
         renderer = new OrthogonalTiledMapRenderer(tiledMap);
         camera = new OrthographicCamera();
-        camera.setToOrtho(false, 448, 240);
-        viewport = new FitViewport(448, 240, camera);
+        camera.setToOrtho(false, 640, 640);
+        viewport = new FitViewport(640, 640, camera);
         return tiledMap;
     }
     public void render(){

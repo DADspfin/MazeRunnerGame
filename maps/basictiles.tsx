@@ -22,4 +22,11 @@
    </object>
   </objectgroup>
  </tile>
+ <tile id="73">
+  <objectgroup draworder="index" id="2">
+   <object id="1" x="0.1" y="0.1">
+    <polygon points="0,-0.2 -0.2,16.1 16,15.8 15.9,-0.2"/>
+   </object>
+  </objectgroup>
+ </tile>
 </tileset>

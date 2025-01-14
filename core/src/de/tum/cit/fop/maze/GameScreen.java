@@ -42,9 +42,6 @@ public class GameScreen implements Screen {
 
     private MazeLoader mazeLoader; // Declare the MazeLoader object
     // Maze-related fields
-    private Map<String, Integer> maze;
-    private Texture tilesheet;
-    private TextureRegion wallTexture;
     private List<Key> keys = new ArrayList<>();
     private List<CollectableLives> lives = new ArrayList<>();
     private List<CollectablePowerUp> powerUps = new ArrayList<>();
@@ -117,7 +114,9 @@ public class GameScreen implements Screen {
 
         float clampedDelta = Math.min(delta, 0.1f);
 
-        ScreenUtils.clear(0, 0, 0, 1); // Clear the screen
+        ScreenUtils.clear(0, 0, 0, 1);// Clear the screen
+
+        mazeLoader.render();
 
         // Handle input for returning to the menu
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
@@ -250,7 +249,7 @@ public class GameScreen implements Screen {
                 tiledMap = mazeLoader.create("level5-5.tmx");
                 break;
             default:
-                tiledMap = mazeLoader.create("level1-1.tmx");
+                tiledMap = mazeLoader.create("level2-2.tmx");
                 break;
         }
 
